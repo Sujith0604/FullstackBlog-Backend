@@ -23,6 +23,16 @@ mongoose
 app.use("/user", Userrouter);
 app.use("/blog", Blogrouter);
 
+app.use((err, req, res, next) => {
+  const statusCode = err.statusCode || 500;
+  const message = err.message;
+  res.status(statusCode).json({
+    succuess: false,
+    message,
+    statusCode,
+  });
+});
+
 app.listen(process.env.PORT, () => {
   const port = process.env.PORT;
   console.log(`Server is running on port ${port}`);

@@ -1,31 +1,37 @@
 import User from "../models/userModels.js";
+import { errorHandler } from "../utils/Error.js";
 
-export const getUsers = async (req, res) => {
+export const getUsers = async (req, res, next) => {
   try {
     const user = await User.find();
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
-export const getSingleUser = async (req, res) => {
+export const getSingleUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) next(errorHandler(404, "User not found."));
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
 
-export const updateSingleUser = async (req, res) => {};
+export const updateSingleUser = async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
 
-export const deleteSingleUser = async (req, res) => {
+export const deleteSingleUser = async (req, res, next) => {
   try {
     const user = await User.findByIdAndDelete(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) next(errorHandler(404, "User not found."));
     res.json({ message: "User deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
