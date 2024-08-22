@@ -11,12 +11,9 @@ import {
 const router = express.Router();
 
 router.route("/").get(getBlogs);
-router
-  .route("/:id")
-  .get(getSingleBlog)
-  .post(createBlogs)
-  .put(updateSingleBlog)
-  .delete(deleteSingleBlog);
+router.route("/:id").get(getSingleBlog).post(createBlogs);
+
+router.route("/:blogId/:id").delete(deleteSingleBlog).put(updateSingleBlog);
 
 router.route("/user/:id").get(getBlogsByUser);
 
