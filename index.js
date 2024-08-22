@@ -5,10 +5,13 @@ import cors from "cors";
 import mongoose from "mongoose";
 import Userrouter from "./routes/userRoutes.js";
 import Blogrouter from "./routes/blogRoutes.js";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 
 const app = express();
+
+app.use(cookieParser()); // parse cookies from request headers
 
 app.use(cors());
 app.use(bodyParser.json());

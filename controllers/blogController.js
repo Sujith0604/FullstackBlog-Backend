@@ -5,10 +5,54 @@ import { errorHandler } from "../utils/Error.js";
 
 export const getBlogs = async (req, res, next) => {
   try {
-    const blogs = await Blog.find();
+    const startIndex = parseInt(req.query.startIndex) || 0;
+    const limit = parseInt(req.query.limit) || 9;
+    const sortDirection = req.query.order === "asc" ? 1 : -1;
+
+    const blogs = await Blog.find({
+      ...(req.query.userId && {
+        userId: req.query.userId,
+      }),
+      ...(req.query.category && {
+        category: req.query.category,
+      }),
+      ...(req.query.slug && {
+        category: req.query.slug,
+      }),
+      ...(req.query.blogId && {
+        _id: req.query.blofId,
+      }),
+      ...(req.query.searchterm && {
+        $or: {
+          title: { $regex: req.query.searchterm, $options: "i" },
+          content: { $regex: req.query.searchterm, $options: "i" },
+        },
+      }),
+    })
+      .sort({ updatedAt: sortDirection })
+      .skip(startIndex)
+      .limit(limit);
+
+    const totalBlogs = await Blog.countDocuments();
+
+    const now = new Date();
+
+    const oneMonthAgo = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      now.getDate()
+    );
+
+    const lastMonthBlogs = await Blog.countDocuments({
+      createdAt: { $gte: oneMonthAgo },
+    });
 
     if (!blogs) next(errorHandler(404, "No Blog found."));
-    return res.status(200).json(blogs);
+    return res.status(200).json({
+      blogs,
+      totalBlogs,
+      lastMonthBlogs,
+    });
   } catch (error) {
     next(error);
   }
@@ -23,29 +67,53 @@ export const getSingleBlog = async (req, res, next) => {
     next(error);
   }
 };
+
 export const createBlogs = async (req, res, next) => {
-  const { title, content, user, image } = req.body;
+  const { title, content, category, image } = req.body;
+
+  const { id } = req.params;
+
   try {
-    let existingUser = await User.findById(user);
+    let existingUser = await User.findById(id);
+
     if (!existingUser)
       next(
         errorHandler(400, "User not found. Please provide a valid user ID.")
       );
 
-    const newBlog = new Blog({ title, content, user, image });
+    if (!existingUser.isAdmin) {
+      return next(errorHandler(403, "Unauthorized to create blog."));
+    }
+
+    if (!title || !content) {
+      return next(errorHandler(404, " Please provide title and content."));
+    }
+
+    const slug = req.body.title
+      .split(" ")
+      .join("-")
+      .toLowerCase()
+      .replace(/[^a-zA-Z0-9-]/g, "");
+
+    const newBlog = await Blog.create({
+      title,
+      content,
+      category,
+      image,
+      userId: existingUser._id,
+      slug,
+    });
+
+    console.log(newBlog);
+
     if (!newBlog) next(errorHandler(404, "Failed to create Blog."));
 
-    const sesssion = await mongoose.startSession();
-    sesssion.startTransaction();
-    await newBlog.save({ sesssion });
-    existingUser.blogs.push(newBlog);
-    await existingUser.save({ sesssion });
-    await sesssion.commitTransaction();
-    return res.status(201).json(newBlog);
+    res.status(200).json(newBlog);
   } catch (error) {
     next(error);
   }
 };
+
 export const updateSingleBlog = async (req, res, next) => {
   const { id } = req.params;
   const { title, content, user, image } = req.body;

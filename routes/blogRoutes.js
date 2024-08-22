@@ -10,10 +10,11 @@ import {
 
 const router = express.Router();
 
-router.route("/").get(getBlogs).post(createBlogs);
+router.route("/").get(getBlogs);
 router
   .route("/:id")
   .get(getSingleBlog)
+  .post(createBlogs)
   .put(updateSingleBlog)
   .delete(deleteSingleBlog);
 

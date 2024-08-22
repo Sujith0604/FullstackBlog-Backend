@@ -20,13 +20,15 @@ const userSchema = new mongoose.Schema(
       minlength: 8,
       maxlength: 200,
     },
-    blogs: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Blog",
-        required: true,
-      },
-    ],
+    profileImage: {
+      type: String,
+      default:
+        "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
+    },
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

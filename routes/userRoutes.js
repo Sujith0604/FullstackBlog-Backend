@@ -5,7 +5,12 @@ import {
   getUsers,
   updateSingleUser,
 } from "../controllers/userController.js";
-import { createUsers, loginUsers } from "../controllers/authController.js";
+import {
+  createUsers,
+  google,
+  loginUsers,
+  logout,
+} from "../controllers/authController.js";
 
 const router = express.Router();
 
@@ -17,4 +22,6 @@ router
   .put(updateSingleUser)
   .delete(deleteSingleUser);
 
+router.route("/google").post(google);
+router.route("/logout").post(logout);
 export default router;
